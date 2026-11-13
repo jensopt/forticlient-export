@@ -223,6 +223,11 @@ function Start-FctTui {
     $marked = New-Object 'System.Collections.Generic.HashSet[string]'
     $filter = ''; $index = 0; $top = 0; $status = ''
 
+    # The console usually writes in the OEM code page (850/437), where the arrow glyphs are control
+    # codes and do not render. Switch to UTF-8 for the picker and restore it afterwards.
+    $prevEncoding = $null
+    try { $prevEncoding = [Console]::OutputEncoding; [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } catch { $prevEncoding = $null }
+
     & $script:Write "$e[?1049h$e[?25l"   # alternate screen, hide cursor
     try {
         while ($true) {
@@ -230,7 +235,7 @@ function Start-FctTui {
             if ($index -ge $shown.Count) { $index = [Math]::Max(0, $shown.Count - 1) }
 
             $size = Get-FctWindowSize
-            $rows = [Math]::Max(3, $size.Height - 10)
+            $rows = [Math]::Max(3, $size.Height - 11)
             if ($index -lt $top) { $top = $index }
             if ($index -ge $top + $rows) { $top = $index - $rows + 1 }
             $top = [Math]::Max(0, [Math]::Min($top, $shown.Count - $rows))
@@ -250,6 +255,8 @@ function Start-FctTui {
             $frame.Add('')
             $frame.Add("  $e[1mFortiClient $script:Dot export connections$e[0m      filter: $e[33m$filter$e[0m_")
             $frame.Add("  PSK: $psk   user login: $usr   $mrk   $e[90m$script:Right $fold$e[0m")
+            $frame.Add('')
+            $frame.Add(("  $e[90m      {0,-5} {1} {2,-3} {3}$e[0m" -f 'Type', 'Name'.PadRight($wName), 'SSO', 'Gateway'))
             $frame.Add('  ' + ($script:Line * [Math]::Min(90, $size.Width - 4)))
 
             if (-not $shown) { $frame.Add("  $e[90m(no match)$e[0m") }
@@ -344,7 +351,10 @@ function Start-FctTui {
             catch { $status = "$e[31mERROR: $($_.Exception.Message)$e[0m" }
         }
     }
-    finally { & $script:Write "$e[?25h$e[?1049l" }   # restore screen and cursor
+    finally {
+        & $script:Write "$e[?25h$e[?1049l"   # restore screen and cursor
+        if ($prevEncoding) { try { [Console]::OutputEncoding = $prevEncoding } catch { } }
+    }
 }
 
 #endregion
