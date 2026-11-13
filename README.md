@@ -7,6 +7,8 @@ Type `fct-export`, move with the arrow keys, type to filter, mark with `Space`, 
 ```
   FortiClient · export connections      filter: _
   PSK: kept   user login: removed   1 marked   → C:\Users\jhondoe\Downloads\FortiClient-Export
+
+        Type  Name              SSO Gateway
   ──────────────────────────────────────────────────────────────────────
     [x] IPsec Contoso IPsec         vpn.contoso.com
   > [ ] IPsec Contoso IPsec SSO SSO vpn.contoso.com
