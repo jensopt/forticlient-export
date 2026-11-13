@@ -2,23 +2,20 @@
 
 A small terminal picker that exports FortiClient VPN connections (IPsec and SSL VPN) on Windows
 to `.reg` files, so you can share a working connection or document it.
-Type `fct-export`, pick one or more connections, done.
+Type `fct-export`, move with the arrow keys, type to filter, mark with `Space`, export with `Enter`.
 
 ```
-=== FortiClient VPN export ===
-  Output folder : C:\Users\you\Downloads\FortiClient-Export
-  PSK           : kept (treat the export as a password)
-  User login    : removed (User/Pass/DATA1-3)
+  FortiClient · export connections      filter: _
+  PSK: kept   user login: removed   1 marked   → C:\Users\jhondoe\Downloads\FortiClient-Export
+  ──────────────────────────────────────────────────────────────────────
+    [x] IPsec Contoso IPsec         vpn.contoso.com
+  > [ ] IPsec Contoso IPsec SSO SSO vpn.contoso.com
+    [ ] IPsec Fabrikam IPsec    SSO vpn1.fabrikam.com, vpn2.fabrikam.com  ! *Sorted differs
+    [ ] SSL   Contoso SSL VPN       vpn.contoso.com:443
 
-    #  Type   Name                 SSO  Gateway
-    1  IPsec  Contoso IPsec             vpn.contoso.com
-    2  IPsec  Contoso IPsec SSO    yes  vpn.contoso.com
-    3  IPsec  Fabrikam IPsec       yes  vpn1.fabrikam.com, vpn2.fabrikam.com  ! *Sorted differs
-
-    4  SSL    Contoso SSL VPN           vpn.contoso.com:443
-
-  1,3,5-7 = export   a = all shown   d <nr> = details   /text = filter   / = clear filter
-  p = PSK on/off   u = user login on/off   o = output folder   e = open folder   r = reload   q = quit
+  4 of 4 connections
+  ↑/↓ move · type to filter · Space mark · Enter export · → details · Esc clear/quit
+  Tab PSK · Ctrl+U user login · Ctrl+A mark all · Ctrl+O folder · Ctrl+E open folder · Ctrl+R reload
 ```
 
 ## Install
@@ -54,14 +51,17 @@ fct-export -?                                help
 
 | Key | Action |
 |---|---|
-| `1,3,5-7` | export these connections (one `.reg` file each) |
-| `a` | export all connections shown |
-| `d <nr>` | show every setting of a connection (secrets masked) |
-| `/text` | filter on name or gateway; `/` clears the filter |
-| `p` | remove/keep the IPsec pre-shared key in the export |
-| `u` | remove/keep the saved user login in the export |
-| `o` / `e` | change / open the output folder |
-| `r` / `q` | reload / quit |
+| `Up` / `Down`, `PgUp` / `PgDn`, `Home` / `End` | move |
+| type letters | filter on name or gateway; `Backspace` edits the filter |
+| `Space` | mark / unmark the current connection |
+| `Enter` | export the marked connections, or the current one when nothing is marked (one `.reg` file each) |
+| `Right` | show every setting of the connection (secrets masked); `Esc` or `Left` goes back |
+| `Tab` | remove / keep the IPsec pre-shared key in the export |
+| `Ctrl+U` | remove / keep the saved user login in the export |
+| `Ctrl+A` | mark / unmark all connections shown |
+| `Ctrl+O` / `Ctrl+E` | change / open the output folder |
+| `Ctrl+R` | reload the connections from the registry |
+| `Esc` | clear the filter; with an empty filter, quit |
 
 Files are named `yyyyMMdd_<Type>_<Name>[_noPSK].reg`.
 
@@ -80,9 +80,9 @@ FortiClient stores some values encrypted. That encryption is reversible, so trea
 
 | Value | Contents | Default |
 |---|---|---|
-| `AuthKey` (IPsec) | pre-shared key | **kept**, the connection needs it. Remove with `p` / `-StripPsk` |
-| `User`, `Pass` (IPsec) | saved username/password | removed. Keep with `u` / `-KeepUserCredentials` |
-| `DATA1`-`DATA3` (SSL VPN) | saved login | removed. Keep with `u` / `-KeepUserCredentials` |
+| `AuthKey` (IPsec) | pre-shared key | **kept**, the connection needs it. Remove with `Tab` / `-StripPsk` |
+| `User`, `Pass` (IPsec) | saved username/password | removed. Keep with `Ctrl+U` / `-KeepUserCredentials` |
+| `DATA1`-`DATA3` (SSL VPN) | saved login | removed. Keep with `Ctrl+U` / `-KeepUserCredentials` |
 
 ## Importing on another PC
 
@@ -97,7 +97,7 @@ On a PC managed by FortiClient EMS, the EMS profile can overrule or remove local
 - **`! *Sorted differs`**: FortiClient keeps `RemoteGWSorted` (IPsec) or `ServerSorted` (SSL VPN) next to
   the gateway. After a connection is edited, that copy can keep the old gateway list, and FortiClient
   keeps connecting there. Delete the connection and create it again.
-- `d <nr>` is handy to document a connection: DWORDs are shown as decimal and hex.
+- The details view (`Right`) is handy to document a connection: DWORDs are shown as decimal and hex.
 - Use **Windows Terminal**. The legacy console host renders the picker poorly.
 
 ## Uninstall
